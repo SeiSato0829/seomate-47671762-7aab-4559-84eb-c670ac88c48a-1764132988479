@@ -1,0 +1,21 @@
+{
+  "name": "seomate-47671762-7aab-4559-84eb-c670ac88c48a-1764132988479",
+  "version": "1.0.0",
+  "description": "Blog for 無題のスプレッドシート",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^2.0.0",
+    "@astrojs/rss": "^4.0.0",
+    "astro": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
