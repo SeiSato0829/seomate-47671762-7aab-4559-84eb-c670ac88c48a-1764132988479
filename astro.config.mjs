@@ -1,14 +1,14 @@
 import { defineConfig } from 'astro/config';
+import mdx from '@astrojs/mdx';
+import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://seo-site.netlify.app',
-  sitemap: true,
-  integrations: [],
-  vite: {
-    define: {
-      'import.meta.env.SITE_NAME': JSON.stringify('無題のスプレッドシート'),
-      'import.meta.env.SITE_DOMAIN': JSON.stringify('seo-site.netlify.app'),
-      'import.meta.env.THEME': JSON.stringify('default')
-    }
-  }
+  site: 'https://example.com',
+  integrations: [mdx(), sitemap()],
+  markdown: {
+    shikiConfig: {
+      theme: 'github-light',
+      wrap: true,
+    },
+  },
 });
