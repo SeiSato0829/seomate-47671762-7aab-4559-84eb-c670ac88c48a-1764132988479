@@ -2,8 +2,12 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
+// Helper to get date from either 'date' or 'pubDate' field
+const getPostDate = (data: any) => data.pubDate || data.date || new Date();
+
 const posts = (await getCollection('posts'))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+  .filter((post) => !post.data.draft)
+  .sort((a, b) => getPostDate(b.data).valueOf() - getPostDate(a.data).valueOf());
 ---
 
 <BaseLayout title="記事一覧 | SEO Blog" description="すべての記事の一覧ページです。">
@@ -20,8 +24,8 @@ const posts = (await getCollection('posts'))
             <a href={`/posts/${post.slug}/`}>
               <article class="post-card">
                 <div class="post-content">
-                  <time datetime={post.data.pubDate.toISOString()}>
-                    {post.data.pubDate.toLocaleDateString('ja-JP', {
+                  <time datetime={getPostDate(post.data).toISOString()}>
+                    {getPostDate(post.data).toLocaleDateString('ja-JP', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',

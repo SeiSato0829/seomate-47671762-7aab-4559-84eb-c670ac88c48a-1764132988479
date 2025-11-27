@@ -5,12 +5,15 @@ const posts = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string().optional(),
-    pubDate: z.coerce.date(),
+    // Support both 'date' and 'pubDate' for flexibility
+    date: z.coerce.date().optional(),
+    pubDate: z.coerce.date().optional(),
     updatedDate: z.coerce.date().optional(),
     heroImage: z.string().optional(),
     tags: z.array(z.string()).optional(),
     author: z.string().optional(),
     keywords: z.string().optional(),
+    draft: z.boolean().optional(),
   }),
 });
 
