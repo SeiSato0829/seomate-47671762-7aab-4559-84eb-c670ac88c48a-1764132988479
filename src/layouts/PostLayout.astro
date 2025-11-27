@@ -370,84 +370,27 @@ const readingTime = estimateReadingTime();
     border-top: 1px solid var(--border-color);
   }
 
-  .share-section {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .share-label {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-    font-weight: 500;
-  }
-
-  .share-buttons {
-    display: flex;
-    gap: 0.625rem;
-  }
-
-  .share-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: white;
-  }
-
-  .share-btn.twitter {
-    background: #000;
-  }
-
-  .share-btn.twitter:hover {
-    background: #333;
-  }
-
-  .share-btn.facebook {
-    background: #1877f2;
-  }
-
-  .share-btn.facebook:hover {
-    background: #166fe5;
-  }
-
-  .share-btn.hatena {
-    background: #00a4de;
-  }
-
-  .share-btn.hatena:hover {
-    background: #0093c6;
-  }
-
-  .share-btn.copy {
-    background: var(--text-secondary);
-  }
-
-  .share-btn.copy:hover {
-    background: var(--text-primary);
-  }
-
   .back-link {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--text-muted);
-    font-size: 0.9375rem;
-    font-weight: 500;
-    padding: 0.75rem 0;
-    transition: color 0.2s ease;
+    gap: 0.625rem;
+    color: var(--primary);
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 1rem 2rem;
+    border: 2px solid var(--primary);
+    border-radius: 50px;
+    background: transparent;
+    transition: all 0.3s ease;
+    text-decoration: none;
   }
 
   .back-link:hover {
-    color: var(--primary);
+    background: var(--primary);
+    color: white;
     text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.25);
   }
 
   .back-link svg {
