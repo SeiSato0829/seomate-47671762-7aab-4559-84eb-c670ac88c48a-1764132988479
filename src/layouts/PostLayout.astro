@@ -6,7 +6,7 @@ type Props = CollectionEntry<'posts'>['data'] & {
   slug: string;
 };
 
-const { title, description, pubDate, date, updatedDate, heroImage, tags, keywords, slug, draft } = Astro.props;
+const { title, description, pubDate, date, updatedDate, heroImage, tags, keywords, slug, draft, category } = Astro.props;
 // Support both 'date' and 'pubDate' fields
 const postDate = pubDate || date || new Date();
 const formattedDate = postDate.toLocaleDateString('ja-JP', {
@@ -14,22 +14,65 @@ const formattedDate = postDate.toLocaleDateString('ja-JP', {
   month: 'long',
   day: 'numeric',
 });
+
+// Calculate reading time estimate (rough estimate based on Japanese text)
+const estimateReadingTime = (wordCount: number = 1500) => {
+  const wordsPerMinute = 400; // Japanese reading speed
+  return Math.ceil(wordCount / wordsPerMinute);
+};
+
+const readingTime = estimateReadingTime();
 ---
 
 <BaseLayout title={title} description={description} keywords={keywords}>
-  <article class="post">
-    <header class="post-header">
-      <h1>{title}</h1>
-      <div class="post-meta">
-        <time datetime={postDate.toISOString()}>{formattedDate}</time>
+  <article class="article">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="パンくずリスト">
+      <a href="/">ホーム</a>
+      <span class="separator">/</span>
+      <a href="/posts">記事一覧</a>
+      <span class="separator">/</span>
+      <span class="current">{title}</span>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="article-header">
+      <div class="article-meta">
+        <time datetime={postDate.toISOString()}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          {formattedDate}
+        </time>
+        <span class="reading-time">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          約{readingTime}分で読めます
+        </span>
         {updatedDate && (
           <span class="updated">
-            (更新: {updatedDate.toLocaleDateString('ja-JP')})
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            更新: {updatedDate.toLocaleDateString('ja-JP')}
           </span>
         )}
       </div>
+
+      <h1>{title}</h1>
+
+      {description && (
+        <p class="article-description">{description}</p>
+      )}
+
       {tags && tags.length > 0 && (
-        <div class="tags">
+        <div class="article-tags">
           {tags.map((tag) => (
             <span class="tag">{tag}</span>
           ))}
@@ -38,119 +81,452 @@ const formattedDate = postDate.toLocaleDateString('ja-JP', {
     </header>
 
     {heroImage && (
-      <img class="hero-image" src={heroImage} alt={title} />
+      <figure class="hero-image-container">
+        <img class="hero-image" src={heroImage} alt={title} loading="lazy" />
+      </figure>
     )}
 
-    <div class="post-content">
+    <!-- Article Content -->
+    <div class="article-content">
       <slot />
     </div>
+
+    <!-- Article Footer -->
+    <footer class="article-footer">
+      <div class="share-section">
+        <span class="share-label">この記事をシェア</span>
+        <div class="share-buttons">
+          <a
+            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(Astro.url.href)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="share-btn twitter"
+            aria-label="Twitterでシェア"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </a>
+          <a
+            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(Astro.url.href)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="share-btn facebook"
+            aria-label="Facebookでシェア"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+          </a>
+          <a
+            href={`https://b.hatena.ne.jp/entry/${encodeURIComponent(Astro.url.href)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="share-btn hatena"
+            aria-label="はてなブックマークに追加"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20.47 21.61c-1.06 0-1.94-.34-2.6-1.02-.66-.68-.99-1.56-.99-2.66s.33-1.97.99-2.65c.66-.68 1.54-1.02 2.6-1.02s1.94.34 2.6 1.02c.66.68.99 1.56.99 2.65s-.33 1.98-.99 2.66c-.66.68-1.54 1.02-2.6 1.02zM3.47 2h4v14.18h-4V2zm9.47 0h4v6.54h-4V2zm9.47 0h4v10.64h-4V2z"/>
+            </svg>
+          </a>
+          <button
+            class="share-btn copy"
+            onclick="navigator.clipboard.writeText(window.location.href).then(() => alert('URLをコピーしました'))"
+            aria-label="URLをコピー"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <a href="/posts" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        記事一覧に戻る
+      </a>
+    </footer>
   </article>
 </BaseLayout>
 
 <style>
-  .post-header {
+  .article {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* Breadcrumb */
+  .breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
     margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid rgb(var(--gray-light));
   }
 
-  .post-header h1 {
-    font-size: 2rem;
-    line-height: 1.3;
-    margin-bottom: 0.5rem;
+  .breadcrumb a {
+    color: var(--text-muted);
+    transition: color 0.2s ease;
   }
 
-  .post-meta {
-    color: rgb(var(--gray));
+  .breadcrumb a:hover {
+    color: var(--primary);
+  }
+
+  .breadcrumb .separator {
+    color: var(--border-color-dark);
+  }
+
+  .breadcrumb .current {
+    color: var(--text-secondary);
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Article Header */
+  .article-header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
     font-size: 0.875rem;
+    color: var(--text-muted);
   }
 
-  .updated {
-    margin-left: 0.5rem;
+  .article-meta time,
+  .article-meta .reading-time,
+  .article-meta .updated {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
   }
 
-  .tags {
-    margin-top: 0.75rem;
+  .article-meta svg {
+    flex-shrink: 0;
+  }
+
+  .article-header h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+
+  .article-description {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+  }
+
+  .article-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
   }
 
   .tag {
-    background: rgb(var(--gray-light));
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    color: rgb(var(--gray-dark));
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 0.375rem 0.875rem;
+    border-radius: 50px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .tag:hover {
+    background: var(--primary);
+    color: white;
+  }
+
+  /* Hero Image */
+  .hero-image-container {
+    margin-bottom: 2.5rem;
+    border-radius: 12px;
+    overflow: hidden;
   }
 
   .hero-image {
     width: 100%;
     max-height: 400px;
     object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 2rem;
+    display: block;
   }
 
-  .post-content {
+  /* Article Content */
+  .article-content {
     font-size: 1.0625rem;
+    line-height: 1.85;
+    color: var(--text-primary);
   }
 
-  .post-content :global(h2) {
+  .article-content :global(h2) {
     font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: 3rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--primary);
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+
+  .article-content :global(h3) {
+    font-size: 1.25rem;
+    font-weight: 600;
     margin-top: 2.5rem;
     margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--accent);
+    color: var(--text-primary);
   }
 
-  .post-content :global(h3) {
-    font-size: 1.25rem;
+  .article-content :global(h4) {
+    font-size: 1.125rem;
+    font-weight: 600;
     margin-top: 2rem;
     margin-bottom: 0.75rem;
+    color: var(--text-primary);
   }
 
-  .post-content :global(p) {
-    margin-bottom: 1.25rem;
+  .article-content :global(p) {
+    margin-bottom: 1.5rem;
   }
 
-  .post-content :global(ul),
-  .post-content :global(ol) {
-    margin-bottom: 1.25rem;
-    padding-left: 1.5rem;
+  .article-content :global(ul),
+  .article-content :global(ol) {
+    margin-bottom: 1.5rem;
+    padding-left: 1.75rem;
   }
 
-  .post-content :global(li) {
-    margin-bottom: 0.5rem;
+  .article-content :global(li) {
+    margin-bottom: 0.625rem;
   }
 
-  .post-content :global(blockquote) {
-    border-left: 4px solid var(--accent);
-    padding-left: 1rem;
-    margin: 1.5rem 0;
-    color: rgb(var(--gray));
+  .article-content :global(li::marker) {
+    color: var(--primary);
+  }
+
+  .article-content :global(blockquote) {
+    border-left: 4px solid var(--primary);
+    padding: 1rem 1.5rem;
+    margin: 2rem 0;
+    background: var(--bg-secondary);
+    border-radius: 0 8px 8px 0;
+    color: var(--text-secondary);
     font-style: italic;
   }
 
-  .post-content :global(code) {
-    background: rgb(var(--gray-light));
-    padding: 0.125rem 0.375rem;
-    border-radius: 4px;
-    font-size: 0.875em;
+  .article-content :global(blockquote p:last-child) {
+    margin-bottom: 0;
   }
 
-  .post-content :global(pre) {
+  .article-content :global(code) {
+    background: var(--bg-tertiary);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  .article-content :global(pre) {
     background: #1e293b;
     color: #e2e8f0;
-    padding: 1rem;
-    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    border-radius: 12px;
     overflow-x: auto;
-    margin-bottom: 1.25rem;
+    margin: 2rem 0;
+    font-size: 0.9em;
+    line-height: 1.7;
   }
 
-  .post-content :global(pre code) {
+  .article-content :global(pre code) {
     background: none;
     padding: 0;
     color: inherit;
+    font-size: inherit;
+  }
+
+  .article-content :global(a) {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.2s ease;
+  }
+
+  .article-content :global(a:hover) {
+    color: var(--primary-dark);
+  }
+
+  .article-content :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 2rem 0;
+  }
+
+  .article-content :global(hr) {
+    border: none;
+    height: 1px;
+    background: var(--border-color);
+    margin: 3rem 0;
+  }
+
+  .article-content :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2rem 0;
+    font-size: 0.9375rem;
+  }
+
+  .article-content :global(th),
+  .article-content :global(td) {
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1rem;
+    text-align: left;
+  }
+
+  .article-content :global(th) {
+    background: var(--bg-secondary);
+    font-weight: 600;
+  }
+
+  .article-content :global(strong) {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* Article Footer */
+  .article-footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .share-section {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .share-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .share-buttons {
+    display: flex;
+    gap: 0.625rem;
+  }
+
+  .share-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+  }
+
+  .share-btn.twitter {
+    background: #000;
+  }
+
+  .share-btn.twitter:hover {
+    background: #333;
+  }
+
+  .share-btn.facebook {
+    background: #1877f2;
+  }
+
+  .share-btn.facebook:hover {
+    background: #166fe5;
+  }
+
+  .share-btn.hatena {
+    background: #00a4de;
+  }
+
+  .share-btn.hatena:hover {
+    background: #0093c6;
+  }
+
+  .share-btn.copy {
+    background: var(--text-secondary);
+  }
+
+  .share-btn.copy:hover {
+    background: var(--text-primary);
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    padding: 0.75rem 0;
+    transition: color 0.2s ease;
+  }
+
+  .back-link:hover {
+    color: var(--primary);
+    text-decoration: none;
+  }
+
+  .back-link svg {
+    transition: transform 0.2s ease;
+  }
+
+  .back-link:hover svg {
+    transform: translateX(-4px);
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .article-header h1 {
+      font-size: 1.75rem;
+    }
+
+    .article-meta {
+      gap: 0.75rem;
+    }
+
+    .article-content {
+      font-size: 1rem;
+    }
+
+    .article-content :global(h2) {
+      font-size: 1.375rem;
+    }
+
+    .article-content :global(h3) {
+      font-size: 1.125rem;
+    }
   }
 </style>
